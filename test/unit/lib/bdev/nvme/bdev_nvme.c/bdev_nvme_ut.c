@@ -49,7 +49,8 @@ static void *g_accel_p = (void *)0xdeadbeaf;
 DEFINE_STUB(spdk_nvme_probe_async, struct spdk_nvme_probe_ctx *,
 	    (const struct spdk_nvme_transport_id *trid, void *cb_ctx,
 	     spdk_nvme_probe_cb probe_cb, spdk_nvme_attach_cb attach_cb,
-	     spdk_nvme_remove_cb remove_cb), NULL);
+	     spdk_nvme_remove_cb remove_cb,
+	     bool p2p_en), NULL);
 
 DEFINE_STUB_V(spdk_nvme_trid_populate_transport, (struct spdk_nvme_transport_id *trid,
 		enum spdk_nvme_transport_type trtype));
@@ -553,7 +554,7 @@ spdk_nvme_probe_poll_async(struct spdk_nvme_probe_ctx *probe_ctx)
 struct spdk_nvme_probe_ctx *
 spdk_nvme_connect_async(const struct spdk_nvme_transport_id *trid,
 			const struct spdk_nvme_ctrlr_opts *opts,
-			spdk_nvme_attach_cb attach_cb)
+			spdk_nvme_attach_cb attach_cb, bool p2p_en)
 {
 	struct spdk_nvme_probe_ctx *probe_ctx;
 

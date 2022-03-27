@@ -2243,7 +2243,7 @@ int main(int argc, char **argv)
 
 		spdk_nvme_ctrlr_get_default_ctrlr_opts(&opts, sizeof(opts));
 		memcpy(opts.hostnqn, g_hostnqn, sizeof(opts.hostnqn));
-		ctrlr = spdk_nvme_connect(&g_trid, &opts, sizeof(opts));
+		ctrlr = spdk_nvme_connect(&g_trid, &opts, sizeof(opts), 0);
 		if (!ctrlr) {
 			fprintf(stderr, "spdk_nvme_connect() failed\n");
 			rc = 1;
@@ -2253,7 +2253,7 @@ int main(int argc, char **argv)
 		g_controllers_found++;
 		print_controller(ctrlr, &g_trid);
 		spdk_nvme_detach_async(ctrlr, &g_detach_ctx);
-	} else if (spdk_nvme_probe(&g_trid, NULL, probe_cb, attach_cb, NULL) != 0) {
+	} else if (spdk_nvme_probe(&g_trid, NULL, probe_cb, attach_cb, NULL, 0) != 0) {
 		fprintf(stderr, "spdk_nvme_probe() failed\n");
 		rc = 1;
 		goto exit;

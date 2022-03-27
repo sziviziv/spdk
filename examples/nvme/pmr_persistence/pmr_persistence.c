@@ -394,7 +394,7 @@ int main(int argc, char **argv)
 	 * in NULL for the first argument.
 	 */
 
-	rc = spdk_nvme_probe(NULL, NULL, probe_cb, attach_cb, NULL);
+	rc = spdk_nvme_probe(NULL, NULL, probe_cb, attach_cb, NULL, 0);
 	if (rc) {
 		fprintf(stderr, "Error in spdk_nvme_probe(): %d\n", rc);
 		cleanup();

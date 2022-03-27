@@ -433,7 +433,7 @@ int main(int argc, char **argv)
 		return 1;
 	}
 
-	if (spdk_nvme_probe(NULL, NULL, probe_cb, attach_cb, NULL) != 0) {
+	if (spdk_nvme_probe(NULL, NULL, probe_cb, attach_cb, NULL, 0) != 0) {
 		fprintf(stderr, "spdk_nvme_probe() failed\n");
 		return 1;
 	}

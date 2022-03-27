@@ -242,7 +242,8 @@ static pthread_barrier_t g_worker_sync_barrier;
 static uint64_t g_tsc_rate;
 
 static bool g_monitor_perf_cores = false;
-
+// ZIV_P2P
+static bool g_p2p_en = false;
 static uint32_t g_io_align = 0x200;
 static bool g_io_align_specified;
 static uint32_t g_io_size_bytes;
@@ -2295,6 +2296,9 @@ static const struct option g_perf_cmdline_opts[] = {
 	{"iova-mode", required_argument, NULL, PERF_IOVA_MODE},
 #define PERF_IO_QUEUE_SIZE	259
 	{"io-queue-size", required_argument, NULL, PERF_IO_QUEUE_SIZE},
+// ZIV_P2P
+#define PERF_P2P_EN	'p'
+	{"p2p-enable", no_argument, NULL, PERF_P2P_EN},
 	/* Should be the last element */
 	{0, 0, 0, 0}
 };
@@ -2416,6 +2420,10 @@ parse_args(int argc, char **argv, struct spdk_env_opts *env_opts)
 			break;
 		case PERF_CPU_USAGE:
 			g_monitor_perf_cores = true;
+			break;
+		// ZIV_P2P
+		case PERF_P2P_EN:
+			g_p2p_en = true;
 			break;
 		case PERF_TRANSPORT:
 			if (add_trid(optarg)) {
@@ -2700,7 +2708,7 @@ register_controllers(void)
 	}
 
 	TAILQ_FOREACH(trid_entry, &g_trid_list, tailq) {
-		if (spdk_nvme_probe(&trid_entry->trid, trid_entry, probe_cb, attach_cb, NULL) != 0) {
+		if (spdk_nvme_probe(&trid_entry->trid, trid_entry, probe_cb, attach_cb, NULL, g_p2p_en) != 0) {
 			fprintf(stderr, "spdk_nvme_probe() failed for transport address '%s'\n",
 				trid_entry->trid.traddr);
 			return -1;

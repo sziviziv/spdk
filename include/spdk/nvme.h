@@ -838,6 +838,9 @@ spdk_nvme_pcie_set_hotplug_filter(spdk_nvme_pcie_hotplug_filter_cb filter_cb);
  * \param remove_cb will be called for devices that were attached in a previous
  * spdk_nvme_probe() call but are no longer attached to the system. Optional;
  * specify NULL if removal notices are not desired.
+ * \param p2p_en indicate that NVME controllers should be initialized using
+ * P2P host information
+ * specify NULL if removal notices are not desired
  *
  * \return 0 on success, -1 on failure.
  */
@@ -845,7 +848,8 @@ int spdk_nvme_probe(const struct spdk_nvme_transport_id *trid,
 		    void *cb_ctx,
 		    spdk_nvme_probe_cb probe_cb,
 		    spdk_nvme_attach_cb attach_cb,
-		    spdk_nvme_remove_cb remove_cb);
+		    spdk_nvme_remove_cb remove_cb,
+		    bool p2p_en);
 
 /**
  * Connect the NVMe driver to the device located at the given transport ID.
@@ -872,13 +876,16 @@ int spdk_nvme_probe(const struct spdk_nvme_transport_id *trid,
  * requested parameters.
  * \param opts_size Must be set to sizeof(struct spdk_nvme_ctrlr_opts), or 0 if
  * opts is NULL.
+ * \param p2p_en - in case peer-2-peer is enabled (SPDK is run on PCI EP card)
+ * then probing is skipped andcontrollers are initialized based on host 
+ * configuration
  *
  * \return pointer to the connected NVMe controller or NULL if there is any failure.
  *
  */
 struct spdk_nvme_ctrlr *spdk_nvme_connect(const struct spdk_nvme_transport_id *trid,
 		const struct spdk_nvme_ctrlr_opts *opts,
-		size_t opts_size);
+		size_t opts_size, bool p2p_en);
 
 struct spdk_nvme_probe_ctx;
 
@@ -897,13 +904,18 @@ struct spdk_nvme_probe_ctx;
  * requested parameters.
  * \param attach_cb will be called once the NVMe controller has been attached
  * to the userspace driver.
+ * \param p2p_en - in case peer-2-peer is enabled (SPDK is run on PCI EP card)
+ * then probing is skipped andcontrollers are initialized based on host 
+ * configuration
  *
  * \return probe context on success, NULL on failure.
  *
  */
+// ZIV_P2P
 struct spdk_nvme_probe_ctx *spdk_nvme_connect_async(const struct spdk_nvme_transport_id *trid,
 		const struct spdk_nvme_ctrlr_opts *opts,
-		spdk_nvme_attach_cb attach_cb);
+		spdk_nvme_attach_cb attach_cb,
+		bool p2p_en);
 
 /**
  * Probe and add controllers to the probe context list.
@@ -923,14 +935,19 @@ struct spdk_nvme_probe_ctx *spdk_nvme_connect_async(const struct spdk_nvme_trans
  * \param remove_cb will be called for devices that were attached in a previous
  * spdk_nvme_probe() call but are no longer attached to the system. Optional;
  * specify NULL if removal notices are not desired.
+ * \param p2p_en - in case peer-2-peer is enabled (SPDK is run on PCI EP card)
+ * then probing is skipped andcontrollers are initialized based on host 
+ * configuration 
  *
  * \return probe context on success, NULL on failure.
  */
+// ZIV_P2P
 struct spdk_nvme_probe_ctx *spdk_nvme_probe_async(const struct spdk_nvme_transport_id *trid,
 		void *cb_ctx,
 		spdk_nvme_probe_cb probe_cb,
 		spdk_nvme_attach_cb attach_cb,
-		spdk_nvme_remove_cb remove_cb);
+		spdk_nvme_remove_cb remove_cb,
+		bool p2p_en);
 
 /**
  * Proceed with attaching controllers associated with the probe context.

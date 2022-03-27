@@ -1011,6 +1011,10 @@ struct spdk_nvme_ctrlr {
 	STAILQ_HEAD(, nvme_register_completion)	register_operations;
 
 	union spdk_nvme_cc_register		process_init_cc;
+
+	
+	// ZIV_P2P - add P2P indication - should be init based on test command line parameter
+	bool					p2p_en;
 };
 
 struct spdk_nvme_probe_ctx {
@@ -1561,5 +1565,52 @@ _is_page_aligned(uint64_t address, uint64_t page_size)
 {
 	return (address & (page_size - 1)) == 0;
 }
+
+#define NVME_P2P_BDF_LEN 		16
+#define NVME_P2P_NUM_NVME_DEVS 		8
+#define P2P_INIT_MEM_DEV 		"/dev/udmabuf0"
+#define P2P_NVME_ACCESS_MEM_DEV 	"/dev/udmabuf1"
+#define P2P_IO_MEM_DEV 			"/dev/udmabuf2"
+#define P2P_DEBUG_INFO_MEM_OFFSET 	0x1000
+
+struct nvme_p2p_header {
+	// board-host init sync mechanism 
+	uint64_t sync_0;
+	uint64_t sync_1;
+	/* BAR0 of PCIe endpoint that runs SDPK*/
+	uint64_t ep_device_bar0;
+	/* BAR2 of PCIe endpoint that runs SDPK*/
+	uint64_t ep_device_bar2;
+	/* BAR4 of PCIe endpoint that runs SDPK*/
+	uint64_t ep_device_bar4;
+	// Number of NVME devices that host scanned and for which SPDK needs to work P2P
+	uint64_t num_nvme_devices;
+};
+
+// Host report of scanned NVME devices
+struct nvme_p2p_data {
+	// NVME BAR0 and capabilities
+	uint64_t nvme_bar;
+	uint64_t nvme_caps;
+};
+
+struct spdk_nvme_p2p_host_info{
+	struct nvme_p2p_header p2p_header;
+	struct nvme_p2p_data p2p_data[NVME_P2P_NUM_NVME_DEVS];
+};
+
+// Debug information - should reside in predefined memory address (P2P_DEBUG_INFO_MEM_OFFSET)
+struct spdk_nvme_p2p_debug_data{
+	// Bus, device, function info
+	char bdf[NVME_P2P_BDF_LEN];
+};
+
+struct spdk_nvme_p2p_host_debug_info{
+	struct spdk_nvme_p2p_debug_data p2p_debug_data[NVME_P2P_NUM_NVME_DEVS];
+};
+
+struct spdk_p2p_hw_trans_table_info {
+	uint64_t nvme_bar[NVME_P2P_NUM_NVME_DEVS];
+};
 
 #endif /* __NVME_INTERNAL_H__ */

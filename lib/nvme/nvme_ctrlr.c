@@ -5212,3 +5212,4 @@ spdk_nvme_ctrlr_get_memory_domains(const struct spdk_nvme_ctrlr *ctrlr,
 {
 	return nvme_transport_ctrlr_get_memory_domains(ctrlr, domains, array_size);
 }
+

@@ -131,6 +131,45 @@ nvme_ctrlr_detach_poll_async(struct nvme_ctrlr_detach_ctx *ctx)
 	return rc;
 }
 
+// ZIV_P2P
+static int 
+nvme_p2p_ctrlr_init(struct spdk_nvme_probe_ctx * probe_ctx)
+{
+	int fd;
+	int i;
+	void* base_addr;
+	struct spdk_nvme_p2p_host_info p2p_host_info;
+	struct spdk_nvme_p2p_host_debug_info p2p_host_debug_info;
+	struct spdk_p2p_hw_trans_table_info p2p_hw_trans_table;
+	
+	// Point to start of host init memory space
+	if ((fd  = open(P2P_INIT_MEM_DEV, O_RDWR)) != -1) {
+        	// Read entire host P2P init structure
+		base_addr = mmap(NULL, sizeof(struct spdk_nvme_p2p_host_info), PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0);
+		
+		// Read init info from memory
+		p2p_host_info = *((struct spdk_nvme_p2p_host_info*)base_addr);
+		
+		p2p_host_debug_info = *((struct spdk_nvme_p2p_host_debug_info*)((uint8_t*)base_addr + P2P_DEBUG_INFO_MEM_OFFSET));
+        	
+//		spdk_p2p_init_controllers();
+
+		// Initialize HW translation table
+		for (i = 0; i < NVME_P2P_NUM_NVME_DEVS; i++) {
+			p2p_hw_trans_table.nvme_bar[i] = p2p_host_info.p2p_data[i].nvme_bar;
+		}
+		
+		// Write to memory
+		*(struct spdk_p2p_hw_trans_table_info*)((uint8_t*)base_addr + P2P_DEBUG_INFO_MEM_OFFSET) = p2p_hw_trans_table;
+		
+        	close(fd);
+		
+		return 0;
+    	}
+	
+	return -1;
+}
+
 int
 spdk_nvme_detach(struct spdk_nvme_ctrlr *ctrlr)
 {
@@ -898,7 +937,7 @@ nvme_probe_ctx_init(struct spdk_nvme_probe_ctx *probe_ctx,
 int
 spdk_nvme_probe(const struct spdk_nvme_transport_id *trid, void *cb_ctx,
 		spdk_nvme_probe_cb probe_cb, spdk_nvme_attach_cb attach_cb,
-		spdk_nvme_remove_cb remove_cb)
+		spdk_nvme_remove_cb remove_cb, bool p2p_en)
 {
 	struct spdk_nvme_transport_id trid_pcie;
 	struct spdk_nvme_probe_ctx *probe_ctx;
@@ -910,7 +949,7 @@ spdk_nvme_probe(const struct spdk_nvme_transport_id *trid, void *cb_ctx,
 	}
 
 	probe_ctx = spdk_nvme_probe_async(trid, cb_ctx, probe_cb,
-					  attach_cb, remove_cb);
+					  attach_cb, remove_cb, p2p_en);
 	if (!probe_ctx) {
 		SPDK_ERRLOG("Create probe context failed\n");
 		return -1;
@@ -995,9 +1034,10 @@ nvme_ctrlr_opts_init(struct spdk_nvme_ctrlr_opts *opts,
 #undef SET_FIELD_ARRAY
 }
 
+// ZIV_P2P
 struct spdk_nvme_ctrlr *
 spdk_nvme_connect(const struct spdk_nvme_transport_id *trid,
-		  const struct spdk_nvme_ctrlr_opts *opts, size_t opts_size)
+		  const struct spdk_nvme_ctrlr_opts *opts, size_t opts_size, bool p2p_en)
 {
 	int rc;
 	struct spdk_nvme_ctrlr *ctrlr = NULL;
@@ -1015,7 +1055,8 @@ spdk_nvme_connect(const struct spdk_nvme_transport_id *trid,
 		nvme_ctrlr_opts_init(opts_local_p, opts, opts_size);
 	}
 
-	probe_ctx = spdk_nvme_connect_async(trid, opts_local_p, NULL);
+	// ZIV_P2P
+	probe_ctx = spdk_nvme_connect_async(trid, opts_local_p, NULL, p2p_en);
 	if (!probe_ctx) {
 		SPDK_ERRLOG("Create probe context failed\n");
 		return NULL;
@@ -1492,12 +1533,14 @@ spdk_nvme_prchk_flags_str(uint32_t prchk_flags)
 	}
 }
 
+// ZIV_P2P
 struct spdk_nvme_probe_ctx *
 spdk_nvme_probe_async(const struct spdk_nvme_transport_id *trid,
 		      void *cb_ctx,
 		      spdk_nvme_probe_cb probe_cb,
 		      spdk_nvme_attach_cb attach_cb,
-		      spdk_nvme_remove_cb remove_cb)
+		      spdk_nvme_remove_cb remove_cb,
+		      bool p2p_en)
 {
 	int rc;
 	struct spdk_nvme_probe_ctx *probe_ctx;
@@ -1513,7 +1556,14 @@ spdk_nvme_probe_async(const struct spdk_nvme_transport_id *trid,
 	}
 
 	nvme_probe_ctx_init(probe_ctx, trid, cb_ctx, probe_cb, attach_cb, remove_cb);
-	rc = nvme_probe_internal(probe_ctx, false);
+	
+	// ZIV_P2P
+	if (p2p_en) {
+		rc = nvme_p2p_ctrlr_init(probe_ctx);
+	} else {
+		rc = nvme_probe_internal(probe_ctx, false);
+	}
+
 	if (rc != 0) {
 		free(probe_ctx);
 		return NULL;
@@ -1547,10 +1597,12 @@ spdk_nvme_probe_poll_async(struct spdk_nvme_probe_ctx *probe_ctx)
 	return -EAGAIN;
 }
 
+// ZIV_P2P
 struct spdk_nvme_probe_ctx *
 spdk_nvme_connect_async(const struct spdk_nvme_transport_id *trid,
 			const struct spdk_nvme_ctrlr_opts *opts,
-			spdk_nvme_attach_cb attach_cb)
+			spdk_nvme_attach_cb attach_cb,
+			bool p2p_en)
 {
 	int rc;
 	spdk_nvme_probe_cb probe_cb = NULL;
@@ -1571,7 +1623,14 @@ spdk_nvme_connect_async(const struct spdk_nvme_transport_id *trid,
 	}
 
 	nvme_probe_ctx_init(probe_ctx, trid, (void *)opts, probe_cb, attach_cb, NULL);
-	rc = nvme_probe_internal(probe_ctx, true);
+	
+	// ZIV_P2P
+	if (p2p_en) {
+		rc = nvme_p2p_ctrlr_init(probe_ctx);
+	} else {
+		rc = nvme_probe_internal(probe_ctx, true);
+	}
+
 	if (rc != 0) {
 		free(probe_ctx);
 		return NULL;

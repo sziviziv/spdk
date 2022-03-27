@@ -622,7 +622,7 @@ int main(int argc, char **argv)
 
 	printf("NVMe Write/Read with End-to-End data protection test\n");
 
-	if (spdk_nvme_probe(NULL, NULL, probe_cb, attach_cb, NULL) != 0) {
+	if (spdk_nvme_probe(NULL, NULL, probe_cb, attach_cb, NULL, 0) != 0) {
 		fprintf(stderr, "nvme_probe() failed\n");
 		exit(1);
 	}

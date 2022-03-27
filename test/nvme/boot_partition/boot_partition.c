@@ -283,7 +283,7 @@ int main(int argc, char **argv)
 
 	printf("Initializing NVMe Controller\n");
 
-	g_ctrlr.ctrlr = spdk_nvme_connect(&g_ctrlr.trid, NULL, 0);
+	g_ctrlr.ctrlr = spdk_nvme_connect(&g_ctrlr.trid, NULL, 0, 0);
 	if (!g_ctrlr.ctrlr) {
 		fprintf(stderr, "spdk_nvme_connect() failed\n");
 		return 1;
