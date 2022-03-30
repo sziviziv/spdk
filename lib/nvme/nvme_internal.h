@@ -1622,7 +1622,6 @@ struct nvme_p2p_hw_trans_table_info {
 struct spdk_nvme_p2p_params {
 	struct nvme_pci_p2p_host_info p2p_host_info;
 	void* 			      nvme_access_virt_base_addr;	
-	void* 			      nvme_huge_mem_base_addr;
 	uint8_t			      curr_dev_idx;
 };
 

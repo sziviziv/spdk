@@ -58,6 +58,11 @@
 #include <linux/vfio.h>
 #include <rte_vfio.h>
 
+bool g_mem_p2p_en = false;
+// SPDK huge-mem area as seen from host (e.g. BAR4)
+uint64_t g_spdk_p2p_dev_hugemem_base_phys_addr;
+uint64_t g_nvme_p2p_hugemem_base_addr;
+
 struct spdk_vfio_dma_map {
 	struct vfio_iommu_type1_dma_map map;
 	TAILQ_ENTRY(spdk_vfio_dma_map) tailq;
@@ -1427,7 +1432,13 @@ spdk_vtophys(const void *buf, uint64_t *size)
 	if (paddr_2mb == SPDK_VTOPHYS_ERROR) {
 		return SPDK_VTOPHYS_ERROR;
 	} else {
-		return paddr_2mb + (vaddr & MASK_2MB);
+		if (g_mem_p2p_en) {
+			uint64_t abs_phys_addr = paddr_2mb + (vaddr & MASK_2MB);
+			// Get offset from huge-mem base address and add to host viewed hug-mem base address
+			return (g_spdk_p2p_dev_hugemem_base_phys_addr + (abs_phys_addr - g_nvme_p2p_hugemem_base_addr));
+		} else {
+			return paddr_2mb + (vaddr & MASK_2MB);
+		}
 	}
 }
 
