@@ -2877,6 +2877,13 @@ int main(int argc, char **argv)
 		fprintf(stderr, "Failed to init mutex\n");
 		return -1;
 	}
+
+	// ZIV_P2P
+	if (g_p2p_en && spdk_fetch_nvme_p2p_host_init(&opts) < 0) {
+		fprintf(stderr, "Perf P2P: Failed to initialize P2P host database.\n");
+		return -1;
+	}
+
 	if (spdk_env_init(&opts) < 0) {
 		fprintf(stderr, "Unable to initialize SPDK env\n");
 		unregister_trids();

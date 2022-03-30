@@ -1023,6 +1023,7 @@ struct spdk_nvme_probe_ctx {
 	spdk_nvme_probe_cb			probe_cb;
 	spdk_nvme_attach_cb			attach_cb;
 	spdk_nvme_remove_cb			remove_cb;
+	bool					p2p_en;
 	TAILQ_HEAD(, spdk_nvme_ctrlr)		init_ctrlrs;
 };
 
@@ -1566,51 +1567,66 @@ _is_page_aligned(uint64_t address, uint64_t page_size)
 	return (address & (page_size - 1)) == 0;
 }
 
-#define NVME_P2P_BDF_LEN 		16
+// ZIV_P2P
+#define NVME_P2P_DBDF_LEN 		16
 #define NVME_P2P_NUM_NVME_DEVS 		8
 #define P2P_INIT_MEM_DEV 		"/dev/udmabuf0"
 #define P2P_NVME_ACCESS_MEM_DEV 	"/dev/udmabuf1"
 #define P2P_IO_MEM_DEV 			"/dev/udmabuf2"
-#define P2P_DEBUG_INFO_MEM_OFFSET 	0x1000
+// Single NVME access memory range: 16K per device
+#define P2P_NVME_DEVICE_ACCESS_MEM_RANGE 0x4000
+// Total all NVME devices access memory range
+#define P2P_ALL_NVME_DEVICES_ACCESS_MEM_RANGE (P2P_NVME_DEVICE_ACCESS_MEM_RANGE*NVME_P2P_NUM_NVME_DEVS)
+// Offset from memory start where the HW translation table should reside
+#define P2P_TRANS_TBL_MEM_OFFSET 	0x1000
+// IO memory size
+#define P2P_IO_MEM_SIZE 		0x80000000
 
-struct nvme_p2p_header {
+struct nvme_pci_p2p_header {
 	// board-host init sync mechanism 
 	uint64_t sync_0;
 	uint64_t sync_1;
-	/* BAR0 of PCIe endpoint that runs SDPK*/
+	/* BAR0 of PCIe endpoint that runs SPDK*/
 	uint64_t ep_device_bar0;
-	/* BAR2 of PCIe endpoint that runs SDPK*/
+	/* BAR2 of PCIe endpoint that runs SPDK*/
 	uint64_t ep_device_bar2;
-	/* BAR4 of PCIe endpoint that runs SDPK*/
+	/* BAR4 of PCIe endpoint that runs SPDK*/
 	uint64_t ep_device_bar4;
+	/* PCIe endpoint domain, bus, device, function info*/
+	char 	 ep_device_dbdf[NVME_P2P_DBDF_LEN];
 	// Number of NVME devices that host scanned and for which SPDK needs to work P2P
 	uint64_t num_nvme_devices;
 };
 
-// Host report of scanned NVME devices
-struct nvme_p2p_data {
-	// NVME BAR0 and capabilities
-	uint64_t nvme_bar;
-	uint64_t nvme_caps;
+// Host report of scanned NVME PCIE devices
+struct nvme_pci_p2p_data {
+	char nvme_dbdf[NVME_P2P_DBDF_LEN];
+	uint32_t class_id;
+	uint16_t vendor_id;
+	uint16_t device_id;
+	uint16_t subvendor_id;
+	uint16_t subdevice_id;
+	uint32_t reserved;
+	uint64_t nvme_bar0;
+	union spdk_nvme_cap_register nvme_caps;
 };
 
-struct spdk_nvme_p2p_host_info{
-	struct nvme_p2p_header p2p_header;
-	struct nvme_p2p_data p2p_data[NVME_P2P_NUM_NVME_DEVS];
+struct nvme_pci_p2p_host_info {
+	struct nvme_pci_p2p_header p2p_header;
+	struct nvme_pci_p2p_data   p2p_data[NVME_P2P_NUM_NVME_DEVS];
 };
 
-// Debug information - should reside in predefined memory address (P2P_DEBUG_INFO_MEM_OFFSET)
-struct spdk_nvme_p2p_debug_data{
-	// Bus, device, function info
-	char bdf[NVME_P2P_BDF_LEN];
+struct nvme_p2p_hw_trans_table_info {
+	uint64_t nvme_bar0[NVME_P2P_NUM_NVME_DEVS];
 };
 
-struct spdk_nvme_p2p_host_debug_info{
-	struct spdk_nvme_p2p_debug_data p2p_debug_data[NVME_P2P_NUM_NVME_DEVS];
+struct spdk_nvme_p2p_params {
+	struct nvme_pci_p2p_host_info p2p_host_info;
+	void* 			      nvme_access_virt_base_addr;	
+	void* 			      nvme_huge_mem_base_addr;
+	uint8_t			      curr_dev_idx;
 };
 
-struct spdk_p2p_hw_trans_table_info {
-	uint64_t nvme_bar[NVME_P2P_NUM_NVME_DEVS];
-};
+extern struct spdk_nvme_p2p_params *g_nvme_p2p_params;
 
 #endif /* __NVME_INTERNAL_H__ */
