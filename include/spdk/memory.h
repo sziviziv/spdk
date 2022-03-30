@@ -59,6 +59,6 @@ extern "C" {
 
 extern bool g_mem_p2p_en;
 extern uint64_t	g_spdk_p2p_dev_hugemem_base_phys_addr;
-extern uint64_t	g_nvme_p2p_hugemem_base_addr;
+extern uint64_t	g_p2p_hugemem_virt_base_addr;
 
 #endif /* SPDK_MEMORY_H */

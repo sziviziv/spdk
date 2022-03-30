@@ -61,7 +61,7 @@
 bool g_mem_p2p_en = false;
 // SPDK huge-mem area as seen from host (e.g. BAR4)
 uint64_t g_spdk_p2p_dev_hugemem_base_phys_addr;
-uint64_t g_nvme_p2p_hugemem_base_addr;
+uint64_t g_p2p_hugemem_virt_base_addr;
 
 struct spdk_vfio_dma_map {
 	struct vfio_iommu_type1_dma_map map;
@@ -1433,9 +1433,10 @@ spdk_vtophys(const void *buf, uint64_t *size)
 		return SPDK_VTOPHYS_ERROR;
 	} else {
 		if (g_mem_p2p_en) {
-			uint64_t abs_phys_addr = paddr_2mb + (vaddr & MASK_2MB);
-			// Get offset from huge-mem base address and add to host viewed hug-mem base address
-			return (g_spdk_p2p_dev_hugemem_base_phys_addr + (abs_phys_addr - g_nvme_p2p_hugemem_base_addr));
+			// Get current virtual address offset from huge-mem base virtual address
+			// and add to host viewed hug-mem physical base address (assumption is that virtual
+			// address is consecutive)
+			return ((vaddr - g_p2p_hugemem_virt_base_addr) + g_spdk_p2p_dev_hugemem_base_phys_addr);
 		} else {
 			return paddr_2mb + (vaddr & MASK_2MB);
 		}

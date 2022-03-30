@@ -869,7 +869,7 @@ spdk_fetch_nvme_p2p_host_init(struct spdk_env_opts* opts)
 		// Set P2P memory indication
 		g_mem_p2p_en = true;
  		g_spdk_p2p_dev_hugemem_base_phys_addr = g_nvme_p2p_params->p2p_host_info.p2p_header.ep_device_bar4;
-		g_nvme_p2p_hugemem_base_addr = (uint64_t)huge_mem_virt_base_addr;
+		g_p2p_hugemem_virt_base_addr = (uint64_t)huge_mem_virt_base_addr;
 
 		// Set NVME access base virtual address
 		g_nvme_p2p_params->nvme_access_virt_base_addr = mmap(NULL, P2P_ALL_NVME_DEVICES_ACCESS_MEM_RANGE, PROT_READ|PROT_WRITE, MAP_SHARED, fd_nvme_access, 0);
