@@ -1023,7 +1023,6 @@ struct spdk_nvme_probe_ctx {
 	spdk_nvme_probe_cb			probe_cb;
 	spdk_nvme_attach_cb			attach_cb;
 	spdk_nvme_remove_cb			remove_cb;
-	bool					p2p_en;
 	TAILQ_HEAD(, spdk_nvme_ctrlr)		init_ctrlrs;
 };
 

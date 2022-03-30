@@ -3748,7 +3748,7 @@ bdev_nvme_hotplug(void *arg)
 	spdk_nvme_trid_populate_transport(&trid_pcie, SPDK_NVME_TRANSPORT_PCIE);
 
 	g_hotplug_probe_ctx = spdk_nvme_probe_async(&trid_pcie, NULL,
-			      hotplug_probe_cb, attach_cb, NULL, 0);
+			      hotplug_probe_cb, attach_cb, NULL);
 
 	if (g_hotplug_probe_ctx) {
 		assert(g_hotplug_probe_poller == NULL);
@@ -4197,7 +4197,7 @@ bdev_nvme_create(struct spdk_nvme_transport_id *trid,
 		attach_cb = connect_set_failover_cb;
 	}
 
-	ctx->probe_ctx = spdk_nvme_connect_async(trid, &ctx->drv_opts, attach_cb, 0);
+	ctx->probe_ctx = spdk_nvme_connect_async(trid, &ctx->drv_opts, attach_cb);
 	if (ctx->probe_ctx == NULL) {
 		SPDK_ERRLOG("No controller was found with provided trid (traddr: %s)\n", trid->traddr);
 		free(ctx);
@@ -4671,7 +4671,7 @@ discovery_poller(void *arg)
 		assert(ctx->entry_ctx_in_use == NULL);
 		ctx->entry_ctx_in_use = TAILQ_FIRST(&ctx->discovery_entry_ctxs);
 		trid = &ctx->entry_ctx_in_use->trid;
-		ctx->probe_ctx = spdk_nvme_connect_async(trid, &ctx->drv_opts, discovery_attach_cb, 0);
+		ctx->probe_ctx = spdk_nvme_connect_async(trid, &ctx->drv_opts, discovery_attach_cb);
 		if (ctx->probe_ctx) {
 			TAILQ_REMOVE(&ctx->discovery_entry_ctxs, ctx->entry_ctx_in_use, tailq);
 		} else {

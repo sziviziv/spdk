@@ -722,7 +722,7 @@ begin_fuzz(void *ctx)
 	}
 
 	TAILQ_FOREACH(trid, &g_trid_list, tailq) {
-		ctrlr = spdk_nvme_connect(&trid->trid, NULL, 0, 0);
+		ctrlr = spdk_nvme_connect(&trid->trid, NULL, 0);
 		if (ctrlr == NULL) {
 			fprintf(stderr, "spdk_nvme_connect() failed for transport address '%s'\n",
 				trid->trid.traddr);

@@ -684,7 +684,7 @@ static int spdk_fio_setup(struct thread_data *td)
 			attach_cb(td, &trid, fio_ctrlr->ctrlr, &fio_ctrlr->opts);
 		} else {
 			/* Enumerate all of the controllers */
-			if (spdk_nvme_probe(&trid, td, probe_cb, attach_cb, NULL, 0) != 0) {
+			if (spdk_nvme_probe(&trid, td, probe_cb, attach_cb, NULL) != 0) {
 				SPDK_ERRLOG("spdk_nvme_probe() failed\n");
 				continue;
 			}

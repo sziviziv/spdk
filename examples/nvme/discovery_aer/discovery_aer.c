@@ -307,7 +307,7 @@ int main(int argc, char **argv)
 		snprintf(ctrlr_opts.hostnqn, sizeof(ctrlr_opts.hostnqn), "%s", g_hostnqn);
 	}
 
-	g_ctrlr = spdk_nvme_connect(&g_trid, &ctrlr_opts, sizeof(ctrlr_opts), 0);
+	g_ctrlr = spdk_nvme_connect(&g_trid, &ctrlr_opts, sizeof(ctrlr_opts));
 	if (g_ctrlr == NULL) {
 		fprintf(stderr, "spdk_nvme_connect() failed for transport address '%s'\n", g_trid.traddr);
 		exit(1);

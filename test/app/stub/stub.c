@@ -120,7 +120,7 @@ stub_start(void *arg1)
 
 	spdk_unaffinitize_thread();
 
-	if (spdk_nvme_probe(NULL, NULL, probe_cb, attach_cb, NULL, 0) != 0) {
+	if (spdk_nvme_probe(NULL, NULL, probe_cb, attach_cb, NULL) != 0) {
 		fprintf(stderr, "spdk_nvme_probe() failed\n");
 		exit(1);
 	}

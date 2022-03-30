@@ -112,7 +112,7 @@ admin_identify_ctrlr_verify_dptr(void)
 	SPDK_CU_ASSERT_FATAL(ctrlr_data != NULL);
 
 	SPDK_CU_ASSERT_FATAL(spdk_nvme_transport_id_parse(&g_trid, g_trid_str) == 0);
-	ctrlr = spdk_nvme_connect(&g_trid, NULL, 0, 0);
+	ctrlr = spdk_nvme_connect(&g_trid, NULL, 0);
 	SPDK_CU_ASSERT_FATAL(ctrlr);
 
 	memset(&cmd, 0, sizeof(cmd));
@@ -167,7 +167,7 @@ admin_identify_ctrlr_verify_fused(void)
 	SPDK_CU_ASSERT_FATAL(ctrlr_data != NULL);
 
 	SPDK_CU_ASSERT_FATAL(spdk_nvme_transport_id_parse(&g_trid, g_trid_str) == 0);
-	ctrlr = spdk_nvme_connect(&g_trid, NULL, 0, 0);
+	ctrlr = spdk_nvme_connect(&g_trid, NULL, 0);
 	SPDK_CU_ASSERT_FATAL(ctrlr);
 
 	/* The nvme driver waits until it sees both fused commands before submitting
@@ -212,7 +212,7 @@ admin_delete_io_sq_use_admin_qid(void)
 	int rc;
 
 	SPDK_CU_ASSERT_FATAL(spdk_nvme_transport_id_parse(&g_trid, g_trid_str) == 0);
-	ctrlr = spdk_nvme_connect(&g_trid, NULL, 0, 0);
+	ctrlr = spdk_nvme_connect(&g_trid, NULL, 0);
 	SPDK_CU_ASSERT_FATAL(ctrlr);
 
 	/* Try deleting SQ for QID 0 (admin queue).  This is invalid. */
@@ -241,7 +241,7 @@ admin_delete_io_cq_use_admin_qid(void)
 	int rc;
 
 	SPDK_CU_ASSERT_FATAL(spdk_nvme_transport_id_parse(&g_trid, g_trid_str) == 0);
-	ctrlr = spdk_nvme_connect(&g_trid, NULL, 0, 0);
+	ctrlr = spdk_nvme_connect(&g_trid, NULL, 0);
 	SPDK_CU_ASSERT_FATAL(ctrlr);
 
 	/* Try deleting CQ for QID 0 (admin queue).  This is invalid. */
@@ -276,7 +276,7 @@ admin_delete_io_sq_delete_sq_twice(void)
 	int rc;
 
 	SPDK_CU_ASSERT_FATAL(spdk_nvme_transport_id_parse(&g_trid, g_trid_str) == 0);
-	ctrlr = spdk_nvme_connect(&g_trid, NULL, 0, 0);
+	ctrlr = spdk_nvme_connect(&g_trid, NULL, 0);
 	SPDK_CU_ASSERT_FATAL(ctrlr);
 
 	spdk_nvme_ctrlr_get_default_io_qpair_opts(ctrlr, &opts, sizeof(opts));
@@ -360,7 +360,7 @@ admin_create_io_sq_verify_qsize_cqid(void)
 	int rc;
 
 	SPDK_CU_ASSERT_FATAL(spdk_nvme_transport_id_parse(&g_trid, g_trid_str) == 0);
-	ctrlr = spdk_nvme_connect(&g_trid, NULL, 0, 0);
+	ctrlr = spdk_nvme_connect(&g_trid, NULL, 0);
 	SPDK_CU_ASSERT_FATAL(ctrlr);
 
 	spdk_nvme_ctrlr_get_default_io_qpair_opts(ctrlr, &opts, sizeof(opts));
@@ -500,7 +500,7 @@ admin_create_io_sq_verify_pc(void)
 	int rc;
 
 	SPDK_CU_ASSERT_FATAL(spdk_nvme_transport_id_parse(&g_trid, g_trid_str) == 0);
-	ctrlr = spdk_nvme_connect(&g_trid, NULL, 0, 0);
+	ctrlr = spdk_nvme_connect(&g_trid, NULL, 0);
 	SPDK_CU_ASSERT_FATAL(ctrlr);
 
 	cap = spdk_nvme_ctrlr_get_regs_cap(ctrlr);
@@ -575,7 +575,7 @@ admin_delete_io_cq_delete_cq_first(void)
 	int rc;
 
 	SPDK_CU_ASSERT_FATAL(spdk_nvme_transport_id_parse(&g_trid, g_trid_str) == 0);
-	ctrlr = spdk_nvme_connect(&g_trid, NULL, 0, 0);
+	ctrlr = spdk_nvme_connect(&g_trid, NULL, 0);
 	SPDK_CU_ASSERT_FATAL(ctrlr);
 
 	spdk_nvme_ctrlr_get_default_io_qpair_opts(ctrlr, &opts, sizeof(opts));
@@ -657,7 +657,7 @@ admin_create_io_cq_verify_iv_pc(void)
 	int rc;
 
 	SPDK_CU_ASSERT_FATAL(spdk_nvme_transport_id_parse(&g_trid, g_trid_str) == 0);
-	ctrlr = spdk_nvme_connect(&g_trid, NULL, 0, 0);
+	ctrlr = spdk_nvme_connect(&g_trid, NULL, 0);
 	SPDK_CU_ASSERT_FATAL(ctrlr);
 
 	cap = spdk_nvme_ctrlr_get_regs_cap(ctrlr);
@@ -737,7 +737,7 @@ fabric_property_get(void)
 	int rc;
 
 	SPDK_CU_ASSERT_FATAL(spdk_nvme_transport_id_parse(&g_trid, g_trid_str) == 0);
-	ctrlr = spdk_nvme_connect(&g_trid, NULL, 0, 0);
+	ctrlr = spdk_nvme_connect(&g_trid, NULL, 0);
 	SPDK_CU_ASSERT_FATAL(ctrlr);
 
 	memset(&cmd, 0, sizeof(cmd));
@@ -795,7 +795,7 @@ admin_set_features_number_of_queues(void)
 	int rc;
 
 	SPDK_CU_ASSERT_FATAL(spdk_nvme_transport_id_parse(&g_trid, g_trid_str) == 0);
-	ctrlr = spdk_nvme_connect(&g_trid, NULL, 0, 0);
+	ctrlr = spdk_nvme_connect(&g_trid, NULL, 0);
 	SPDK_CU_ASSERT_FATAL(ctrlr);
 
 	/* NCQR and NSQR are 65535, invalid */
@@ -855,7 +855,7 @@ admin_get_features_mandatory_features(void)
 	int rc;
 
 	SPDK_CU_ASSERT_FATAL(spdk_nvme_transport_id_parse(&g_trid, g_trid_str) == 0);
-	ctrlr = spdk_nvme_connect(&g_trid, NULL, 0, 0);
+	ctrlr = spdk_nvme_connect(&g_trid, NULL, 0);
 	SPDK_CU_ASSERT_FATAL(ctrlr);
 
 	/* Arbitration */
@@ -1012,7 +1012,7 @@ admin_create_io_qp_max_qps(void)
 	int rc;
 
 	SPDK_CU_ASSERT_FATAL(spdk_nvme_transport_id_parse(&g_trid, g_trid_str) == 0);
-	ctrlr = spdk_nvme_connect(&g_trid, NULL, 0, 0);
+	ctrlr = spdk_nvme_connect(&g_trid, NULL, 0);
 	SPDK_CU_ASSERT_FATAL(ctrlr);
 
 	memset(&cmd, 0, sizeof(cmd));
@@ -1062,7 +1062,7 @@ admin_identify_ns(void)
 	int rc;
 
 	SPDK_CU_ASSERT_FATAL(spdk_nvme_transport_id_parse(&g_trid, g_trid_str) == 0);
-	ctrlr = spdk_nvme_connect(&g_trid, NULL, 0, 0);
+	ctrlr = spdk_nvme_connect(&g_trid, NULL, 0);
 	SPDK_CU_ASSERT_FATAL(ctrlr);
 
 	cdata = spdk_nvme_ctrlr_get_data(ctrlr);
@@ -1169,7 +1169,7 @@ admin_get_log_page_mandatory_logs(void)
 	int rc;
 
 	SPDK_CU_ASSERT_FATAL(spdk_nvme_transport_id_parse(&g_trid, g_trid_str) == 0);
-	ctrlr = spdk_nvme_connect(&g_trid, NULL, 0, 0);
+	ctrlr = spdk_nvme_connect(&g_trid, NULL, 0);
 	SPDK_CU_ASSERT_FATAL(ctrlr);
 
 	buf = spdk_dma_zmalloc(0x1000, 0x1000, NULL);
@@ -1227,7 +1227,7 @@ admin_get_log_page_with_lpo(void)
 	int rc;
 
 	SPDK_CU_ASSERT_FATAL(spdk_nvme_transport_id_parse(&g_trid, g_trid_str) == 0);
-	ctrlr = spdk_nvme_connect(&g_trid, NULL, 0, 0);
+	ctrlr = spdk_nvme_connect(&g_trid, NULL, 0);
 	SPDK_CU_ASSERT_FATAL(ctrlr);
 
 	buf = spdk_dma_zmalloc(0x1000, 0x1000, NULL);
@@ -1282,7 +1282,7 @@ admin_create_io_sq_shared_cq(void)
 	int rc;
 
 	SPDK_CU_ASSERT_FATAL(spdk_nvme_transport_id_parse(&g_trid, g_trid_str) == 0);
-	ctrlr = spdk_nvme_connect(&g_trid, NULL, 0, 0);
+	ctrlr = spdk_nvme_connect(&g_trid, NULL, 0);
 	SPDK_CU_ASSERT_FATAL(ctrlr);
 
 	/* we will create 4 SQs and 2 CQs, each queue will use 1 page */

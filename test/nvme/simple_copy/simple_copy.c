@@ -427,7 +427,7 @@ int main(int argc, char **argv)
 
 	printf("Initializing NVMe Controllers\n");
 
-	rc = spdk_nvme_probe(NULL, NULL, probe_cb, attach_cb, NULL, 0);
+	rc = spdk_nvme_probe(NULL, NULL, probe_cb, attach_cb, NULL);
 	if (rc != 0) {
 		fprintf(stderr, "spdk_nvme_probe() failed\n");
 		return 1;

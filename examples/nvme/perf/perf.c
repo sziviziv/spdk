@@ -2709,7 +2709,7 @@ register_controllers(void)
 	}
 
 	TAILQ_FOREACH(trid_entry, &g_trid_list, tailq) {
-		if (spdk_nvme_probe(&trid_entry->trid, trid_entry, probe_cb, attach_cb, NULL, g_p2p_en) != 0) {
+		if (spdk_nvme_probe(&trid_entry->trid, trid_entry, probe_cb, attach_cb, NULL) != 0) {
 			fprintf(stderr, "spdk_nvme_probe() failed for transport address '%s'\n",
 				trid_entry->trid.traddr);
 			return -1;

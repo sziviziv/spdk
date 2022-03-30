@@ -519,7 +519,7 @@ int main(int argc, char **argv)
 	 *  called for each controller after the SPDK NVMe driver has completed
 	 *  initializing the controller we chose to attach.
 	 */
-	rc = spdk_nvme_probe(&g_trid, NULL, probe_cb, attach_cb, NULL, g_p2p_en);
+	rc = spdk_nvme_probe(&g_trid, NULL, probe_cb, attach_cb, NULL);
 	if (rc != 0) {
 		fprintf(stderr, "spdk_nvme_probe() failed\n");
 		rc = 1;

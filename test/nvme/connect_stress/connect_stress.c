@@ -229,7 +229,7 @@ test_controller(void)
 	union spdk_nvme_csts_register csts;
 	struct spdk_nvme_ctrlr *ctrlr;
 
-	ctrlr = spdk_nvme_connect(&g_trid, NULL, 0, 0);
+	ctrlr = spdk_nvme_connect(&g_trid, NULL, 0);
 	if (ctrlr == NULL) {
 		fprintf(stderr, "spdk_nvme_connect() failed for transport address '%s'\n",
 			g_trid.traddr);
