@@ -819,6 +819,13 @@ nvme_get_ctrlr_by_trid_unsafe(const struct spdk_nvme_transport_id *trid)
 }
 
 // ZIV_P2P
+void spdk_free_p2p_resources(void)
+{
+	if (g_nvme_p2p_params) {
+		free(g_nvme_p2p_params);
+	}
+}
+
 int 
 spdk_fetch_nvme_p2p_host_init(struct spdk_env_opts* opts)
 {
@@ -830,17 +837,17 @@ spdk_fetch_nvme_p2p_host_init(struct spdk_env_opts* opts)
 	uint8_t i;
 	struct nvme_p2p_hw_trans_table_info nvme_p2p_hw_trans_table;
 	
-	// Initialize P2P global info structure
-	g_nvme_p2p_params = calloc(1, sizeof(struct spdk_nvme_p2p_params));
-	if (!g_nvme_p2p_params) {
-		return -1;
-	}
-
 	// Point to start of host init memory space
 	if ((fd_nvme_init = open(P2P_INIT_MEM_DEV, O_RDWR)) != -1 && 
 	    (fd_nvme_access = open(P2P_NVME_ACCESS_MEM_DEV, O_RDWR)) != -1 &&
 	    (fd_nvme_huge_mem = open(P2P_IO_MEM_DEV, O_RDWR)) != -1 ) {
-        	// Set init data base virtual address
+		// Initialize P2P global info structure
+		g_nvme_p2p_params = calloc(1, sizeof(struct spdk_nvme_p2p_params));
+		if (!g_nvme_p2p_params) {
+			return -1;
+		}        	
+	
+		// Set init data base virtual address
 		init_data_virt_base_addr = mmap(NULL, sizeof(struct nvme_pci_p2p_host_info), PROT_READ|PROT_WRITE, MAP_SHARED, fd_nvme_init, 0);
 		
 		if (init_data_virt_base_addr == MAP_FAILED) {

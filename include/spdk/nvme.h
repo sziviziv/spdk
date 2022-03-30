@@ -860,6 +860,12 @@ int spdk_nvme_probe(const struct spdk_nvme_transport_id *trid,
 int spdk_fetch_nvme_p2p_host_init(struct spdk_env_opts* opts);
 
 /**
+ * Free allocated memory for P2P info
+ */
+
+void spdk_free_p2p_resources(void);
+
+/**
  * Connect the NVMe driver to the device located at the given transport ID.
  *
  * This function is not thread safe and should only be called from one thread at

@@ -1737,6 +1737,7 @@ static void usage(char *program_name)
 	printf("\t Example: -b 0000:d8:00.0 -b 0000:d9:00.0\n");
 	printf("\t[-q, --io-depth <val> io depth]\n");
 	printf("\t[-o, --io-size <val> io size in bytes]\n");
+	printf("\t[-p, --p2p-enable enable to run P2P IO vs. NVME devices that reside on the same host\n");
 	printf("\t[-O, --io-unit-size io unit size in bytes (4-byte aligned) for SPDK driver. default: same as io size]\n");
 	printf("\t[-P, --num-qpairs <val> number of io queues per namespace. default: 1]\n");
 	printf("\t[-U, --num-unused-qpairs <val> number of unused io queues per controller. default: 0]\n");
@@ -2217,7 +2218,7 @@ parse_metadata(const char *metacfg_str)
 	return 0;
 }
 
-#define PERF_GETOPT_SHORT "a:b:c:e:gi:lmo:q:r:k:s:t:w:z:A:C:DF:GHILM:NO:P:Q:RS:T:U:VZ:"
+#define PERF_GETOPT_SHORT "a:b:c:e:gi:lpmo:q:r:k:s:t:w:z:A:C:DF:GHILM:NO:P:Q:RS:T:U:VZ:"
 
 static const struct option g_perf_cmdline_opts[] = {
 #define PERF_WARMUP_TIME	'a'
@@ -2238,6 +2239,9 @@ static const struct option g_perf_cmdline_opts[] = {
 	{"cpu-usage", no_argument, NULL, PERF_CPU_USAGE},
 #define PERF_IO_SIZE	'o'
 	{"io-size",			required_argument,	NULL, PERF_IO_SIZE},
+// ZIV_P2P
+#define PERF_P2P_EN	'p'
+	{"p2p-enable", no_argument, NULL, PERF_P2P_EN},
 #define PERF_IO_DEPTH	'q'
 	{"io-depth",			required_argument,	NULL, PERF_IO_DEPTH},
 #define PERF_TRANSPORT	'r'
@@ -2296,10 +2300,7 @@ static const struct option g_perf_cmdline_opts[] = {
 	{"iova-mode", required_argument, NULL, PERF_IOVA_MODE},
 #define PERF_IO_QUEUE_SIZE	259
 	{"io-queue-size", required_argument, NULL, PERF_IO_QUEUE_SIZE},
-// ZIV_P2P
-#define PERF_P2P_EN	'p'
-	{"p2p-enable", no_argument, NULL, PERF_P2P_EN},
-	/* Should be the last element */
+/* Should be the last element */
 	{0, 0, 0, 0}
 };
 
@@ -2978,6 +2979,7 @@ cleanup:
 	unregister_namespaces();
 	unregister_controllers();
 	unregister_workers();
+	spdk_free_p2p_resources();
 
 	spdk_env_fini();
 

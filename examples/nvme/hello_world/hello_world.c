@@ -59,6 +59,9 @@ static struct spdk_nvme_transport_id g_trid = {};
 
 static bool g_vmd = false;
 
+// ZIV_P2P
+static bool g_p2p_en = false;
+
 static void
 register_ns(struct spdk_nvme_ctrlr *ctrlr, struct spdk_nvme_ns *ns)
 {
@@ -391,6 +394,8 @@ cleanup(void)
 	if (detach_ctx) {
 		spdk_nvme_detach_poll(detach_ctx);
 	}
+
+	spdk_free_p2p_resources();
 }
 
 static void
@@ -404,6 +409,7 @@ usage(const char *program_name)
 	printf("\t[-i shared memory group ID]\n");
 	printf("\t[-r remote NVMe over Fabrics target address]\n");
 	printf("\t[-V enumerate VMD]\n");
+	printf("\t[-p, --p2p-enable enable to run P2P identify vs. NVME device that reside on the same host\n");
 #ifdef DEBUG
 	printf("\t[-L enable debug logging]\n");
 #else
@@ -419,7 +425,7 @@ parse_args(int argc, char **argv, struct spdk_env_opts *env_opts)
 	spdk_nvme_trid_populate_transport(&g_trid, SPDK_NVME_TRANSPORT_PCIE);
 	snprintf(g_trid.subnqn, sizeof(g_trid.subnqn), "%s", SPDK_NVMF_DISCOVERY_NQN);
 
-	while ((op = getopt(argc, argv, "d:gi:r:L:V")) != -1) {
+	while ((op = getopt(argc, argv, "d:gpi:r:L:V")) != -1) {
 		switch (op) {
 		case 'V':
 			g_vmd = true;
@@ -458,6 +464,9 @@ parse_args(int argc, char **argv, struct spdk_env_opts *env_opts)
 			spdk_log_set_print_level(SPDK_LOG_DEBUG);
 #endif
 			break;
+		case 'p':
+			g_p2p_en = true;
+			break;
 		default:
 			usage(argv[0]);
 			return 1;
@@ -483,6 +492,12 @@ int main(int argc, char **argv)
 	if (rc != 0) {
 		return rc;
 	}
+	
+	// ZIV_P2P
+	if (g_p2p_en && spdk_fetch_nvme_p2p_host_init(&opts) < 0) {
+		fprintf(stderr, "Hello world P2P: Failed to initialize P2P host database.\n");
+		return -1;
+	}
 
 	opts.name = "hello_world";
 	if (spdk_env_init(&opts) < 0) {
@@ -504,7 +519,7 @@ int main(int argc, char **argv)
 	 *  called for each controller after the SPDK NVMe driver has completed
 	 *  initializing the controller we chose to attach.
 	 */
-	rc = spdk_nvme_probe(&g_trid, NULL, probe_cb, attach_cb, NULL, 0);
+	rc = spdk_nvme_probe(&g_trid, NULL, probe_cb, attach_cb, NULL, g_p2p_en);
 	if (rc != 0) {
 		fprintf(stderr, "spdk_nvme_probe() failed\n");
 		rc = 1;
