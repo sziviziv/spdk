@@ -90,6 +90,7 @@ struct spdk_env_opts {
 
 	/** Opaque context for use of the env implementation. */
 	void			*env_context;
+	bool			nvme_p2p_en;	
 };
 
 /**

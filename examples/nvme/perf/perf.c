@@ -2425,6 +2425,7 @@ parse_args(int argc, char **argv, struct spdk_env_opts *env_opts)
 		// ZIV_P2P
 		case PERF_P2P_EN:
 			g_p2p_en = true;
+			env_opts->nvme_p2p_en = true;
 			break;
 		case PERF_TRANSPORT:
 			if (add_trid(optarg)) {
