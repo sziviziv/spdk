@@ -831,16 +831,19 @@ spdk_fetch_nvme_p2p_host_init(struct spdk_env_opts* opts)
 {
 	void* init_data_virt_base_addr;
 	void* huge_mem_virt_base_addr;
+	void* nvme_trans_tbl_virt_base_addr;
 	int fd_nvme_init;
 	int fd_nvme_access;
+	int fd_trans_tbl;
 	int fd_nvme_huge_mem;
 	uint8_t i;
-	struct nvme_p2p_hw_trans_table_info nvme_p2p_hw_trans_table;
+	struct nvme_p2p_hw_trans_table_info nvme_p2p_hw_trans_table = {0};
 	
 	// Point to start of host init memory space
 	if ((fd_nvme_init = open(P2P_INIT_MEM_DEV, O_RDWR)) != -1 && 
 	    (fd_nvme_access = open(P2P_NVME_ACCESS_MEM_DEV, O_RDWR)) != -1 &&
-	    (fd_nvme_huge_mem = open(P2P_IO_MEM_DEV, O_RDWR)) != -1 ) {
+	    (fd_nvme_huge_mem = open(P2P_IO_MEM_DEV, O_RDWR)) != -1  &&
+	    (fd_trans_tbl = open(P2P_TRANS_TBL_MEM_DEV, O_RDWR)) != -1) {
 		// Initialize P2P global info structure
 		g_nvme_p2p_params = calloc(1, sizeof(struct spdk_nvme_p2p_params));
 		if (!g_nvme_p2p_params) {
@@ -879,6 +882,12 @@ spdk_fetch_nvme_p2p_host_init(struct spdk_env_opts* opts)
 			exit(1);
 		}
 
+		nvme_trans_tbl_virt_base_addr = mmap(NULL, P2P_TRANS_TBL_MEM_SIZE, PROT_READ|PROT_WRITE, MAP_SHARED, fd_trans_tbl, 0);
+
+		if (nvme_trans_tbl_virt_base_addr == MAP_FAILED) {
+			fprintf(stderr, "spdk_fetch_nvme_p2p_host_init: Unable to mmap translation table memory.\n");
+			exit(1);
+		}
 		// Read init info from memory
 		g_nvme_p2p_params->p2p_host_info = *((struct nvme_pci_p2p_host_info*)init_data_virt_base_addr);
 		
@@ -888,11 +897,12 @@ spdk_fetch_nvme_p2p_host_init(struct spdk_env_opts* opts)
 		}
 		
 		// Write to memory
-		*(struct nvme_p2p_hw_trans_table_info*)((uint8_t*)init_data_virt_base_addr + P2P_TRANS_TBL_MEM_OFFSET) = nvme_p2p_hw_trans_table;
+		*(struct nvme_p2p_hw_trans_table_info*)nvme_trans_tbl_virt_base_addr = nvme_p2p_hw_trans_table;
 		
 		close(fd_nvme_init);        	
 		close(fd_nvme_access);
 		close(fd_nvme_huge_mem);
+		close(fd_trans_tbl);
 		
 		return 0;
     	}

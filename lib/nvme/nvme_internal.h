@@ -1572,12 +1572,13 @@ _is_page_aligned(uint64_t address, uint64_t page_size)
 #define P2P_INIT_MEM_DEV 		"/dev/udmabuf0"
 #define P2P_NVME_ACCESS_MEM_DEV 	"/dev/udmabuf1"
 #define P2P_IO_MEM_DEV 			"/dev/udmabuf2"
+#define P2P_TRANS_TBL_MEM_DEV 		"/dev/udmabuf3"
 // Single NVME access memory range: 16K per device
 #define P2P_NVME_DEVICE_ACCESS_MEM_RANGE 0x4000
 // Total all NVME devices access memory range
 #define P2P_ALL_NVME_DEVICES_ACCESS_MEM_RANGE (P2P_NVME_DEVICE_ACCESS_MEM_RANGE*NVME_P2P_NUM_NVME_DEVS)
 // Offset from memory start where the HW translation table should reside
-#define P2P_TRANS_TBL_MEM_OFFSET 	0x1000
+#define P2P_TRANS_TBL_MEM_SIZE 		0x400
 // IO memory size
 #define P2P_IO_MEM_SIZE 		0x80000000
 
