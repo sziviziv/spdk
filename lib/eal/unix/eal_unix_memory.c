@@ -27,7 +27,15 @@ static void *
 mem_map(void *requested_addr, size_t size, int prot, int flags,
 	int fd, uint64_t offset)
 {
-	void *virt = mmap(requested_addr, size, prot, flags, fd, offset);
+	// ZIV_P2P
+	void *virt;
+
+	// For P2P: no need for mapping since memory is already mapped in advanced
+	if (g_nvme_p2p_en) {
+		return requested_addr;
+	}
+
+	virt = mmap(requested_addr, size, prot, flags, fd, offset);
 	if (virt == MAP_FAILED) {
 		RTE_LOG(DEBUG, EAL,
 		    "Cannot mmap(%p, 0x%zx, 0x%x, 0x%x, %d, 0x%"PRIx64"): %s\n",

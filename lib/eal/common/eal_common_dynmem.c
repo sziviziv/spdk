@@ -171,6 +171,11 @@ eal_dynmem_memseg_lists_init(void)
 		/* limit number of segment lists according to our maximum */
 		n_seglists = RTE_MIN(n_seglists, max_seglists_per_type);
 
+		// ZIV_P2P - we allow only 2G of huge-mem therefore cannot allow more than 1 segment
+		if (g_nvme_p2p_en) {
+			n_seglists = 1;
+		}
+
 		RTE_LOG(DEBUG, EAL, "Creating %i segment lists: "
 				"n_segs:%i socket_id:%i hugepage_sz:%" PRIu64 "\n",
 			n_seglists, n_segs, socket_id, pagesz);

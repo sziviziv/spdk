@@ -30,6 +30,7 @@ extern "C" {
 
 /* Maximum thread_name length. */
 #define RTE_MAX_THREAD_NAME_LEN 16
+extern bool g_nvme_p2p_en;
 
 /**
  * The type of process in a linux, multi-process setup

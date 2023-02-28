@@ -72,7 +72,8 @@ static int memfd_create_supported =
 		0;
 #define RTE_MFD_HUGETLB 4U
 #endif
-
+//ZIV_P2P
+bool g_nvme_p2p_en = false;
 /*
  * not all kernel version support fallocate on hugetlbfs, so fall back to
  * ftruncate and disallow deallocation if fallocate is not supported.
@@ -582,8 +583,13 @@ alloc_seg(struct rte_memseg *ms, void *addr, int socket_id,
 	 * map the segment, and populate page tables, the kernel fills
 	 * this segment with zeros if it's a new page.
 	 */
-	va = mmap(addr, alloc_sz, PROT_READ | PROT_WRITE, mmap_flags, fd,
-			map_offset);
+	// ZIV_P2P - huge-mem memory is already mapped using udmabuf
+	if (g_nvme_p2p_en) {
+		va = addr;
+	} else {
+		va = mmap(addr, alloc_sz, PROT_READ | PROT_WRITE, mmap_flags, fd,
+				map_offset);
+	}
 
 	if (va == MAP_FAILED) {
 		RTE_LOG(DEBUG, EAL, "%s(): mmap() failed: %s\n", __func__,
@@ -619,11 +625,16 @@ alloc_seg(struct rte_memseg *ms, void *addr, int socket_id,
 	 */
 	*(volatile int *)addr = *(volatile int *)addr;
 
-	iova = rte_mem_virt2iova(addr);
-	if (iova == RTE_BAD_PHYS_ADDR) {
-		RTE_LOG(DEBUG, EAL, "%s(): can't get IOVA addr\n",
-			__func__);
-		goto mapped;
+	// ZIV_P2P - patch: do not extract phys address from virt address
+	if (!g_nvme_p2p_en) {
+		iova = rte_mem_virt2iova(addr);
+		if (iova == RTE_BAD_PHYS_ADDR) {
+			RTE_LOG(DEBUG, EAL, "%s(): can't get IOVA addr\n",
+				__func__);
+			goto mapped;
+		}
+	} else {
+		iova = 0;
 	}
 
 #ifdef RTE_EAL_NUMA_AWARE_HUGEPAGES
